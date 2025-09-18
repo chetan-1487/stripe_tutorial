@@ -1,0 +1,69 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String          @id @default(uuid())
+  email         String          @unique
+  password      String
+  credits       Int             @default(0)
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  payments      Payment[]
+  subscriptions Subscription[]
+}
+
+model Payment {
+  id        String      @id @default(uuid())
+  userId    String
+  amount    Int
+  currency  String
+  stripeId  String      @unique
+  status    String
+  type      PaymentType
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  user User @relation(fields: [userId], references: [id])
+}
+
+model Plan {
+  id            String   @id @default(uuid())
+  name          String
+  price         Int      // in cents
+  currency      String   @default("usd")
+  interval      String?  // "month" | "year" | null for one-time
+  credits       Int
+  stripePriceId String   @unique
+
+  subscriptions Subscription[] 
+}
+
+model Subscription {
+  id          String   @id @default(uuid())
+  userId      String
+  planId      String
+  stripeId    String   @unique
+  status      String
+  startDate   DateTime
+  endDate     DateTime?
+
+  user User @relation(fields: [userId], references: [id])
+  plan Plan @relation(fields: [planId], references: [id])
+}
+
+enum PaymentType {
+  ONE_TIME
+  SUBSCRIPTION
+}
