@@ -3,7 +3,7 @@ import { otpEmailTemplate } from "./emailTemplates.js";
 import nodemailer from "nodemailer"
 
 export const sendEmail=async (to: string, subject: string, otp: string) => {
-  if (!ENV.IS_DEVELOPMENT) {
+  if (ENV.IS_DEVELOPMENT) {
     console.log(`[DEV] OTP for ${to}: ${otp}`);
     return;
   }

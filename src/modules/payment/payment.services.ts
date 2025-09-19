@@ -1,35 +1,38 @@
-import { prisma } from '../../config/prisma.js';
-import { stripe } from '../../config/stripe.js';
+import {prisma} from "../../config/prisma.js";
+import {stripe} from "../../config/stripe.js";
+import { AppError } from "../../utils/errorHandler.js";
 
-export async function createCheckoutSession(
-  userId: string,
-  planId: string,
-  successUrl: string,
-  cancelUrl: string
-) {
+export const createOneTimeCheckout = async (userId: string, planId: string, currency: string) => {
   const plan = await prisma.plan.findUnique({ where: { id: planId } });
-  if (!plan) throw new Error('Plan not found');
+  if (!plan) throw new AppError("Plan not found", 404);
 
-  const mode = plan.interval ? 'subscription' : 'payment';
+  const user = await prisma.user.findUnique({ where: { id: userId } });
+  if (!user) throw new AppError("User not found", 404);
 
   const session = await stripe.checkout.sessions.create({
-    mode: mode as 'payment' | 'subscription',
-    line_items: [{ price: plan.stripePriceId, quantity: 1 }],
-    success_url: successUrl + '?session_id={CHECKOUT_SESSION_ID}',
-    cancel_url: cancelUrl,
-    metadata: { userId, planId, type: mode },
-  });
-
-  await prisma.payment.create({
-    data: {
-      userId,
-      amount: plan.price,
-      currency: plan.currency,
-      stripeId: session.id,
-      status: 'CREATED',
-      type: mode === 'payment' ? 'ONE_TIME' : 'SUBSCRIPTION',
-    },
+    mode: "payment",
+    payment_method_types: ["card"],
+    line_items: [
+      {
+        price_data: {
+          currency: currency || plan.currency,
+          product_data: { name: plan.name },
+          unit_amount: plan.price,
+        },
+        quantity: 1,
+      },
+    ],
+    customer_email: user.email,
+    success_url: `${process.env.FRONTEND_URL}/success?session_id={CHECKOUT_SESSION_ID}`,
+    cancel_url: `${process.env.FRONTEND_URL}/cancel`,
   });
 
   return session;
-}
+};
+
+export const getPaymentsByUser = async (userId: string) => {
+  return prisma.payment.findMany({
+    where: { userId },
+    orderBy: { createdAt: "desc" },
+  });
+};

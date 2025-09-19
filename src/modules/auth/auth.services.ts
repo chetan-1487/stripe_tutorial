@@ -58,9 +58,9 @@ export const login = async (email: string, password: string) => {
     expiresIn: ENV.JWT_EXPIRES_IN || "1h", // default 1h if not set
   };
 
-  const token = jwt.sign({ sub: user.id }, secret, options);
+  const token = jwt.sign({ userId: user.id,email: user.email }, secret, options);
 
-  return { token };
+  return token;
 }
 
 export const forgotPassword= async (email: string) =>  {

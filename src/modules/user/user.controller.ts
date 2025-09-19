@@ -1,16 +1,22 @@
 import type { AuthRequest } from "../../middlewares/auth.js";
-import type { Response } from "express";
+import type { Response, NextFunction } from "express";
 import { getUserById } from "./user.service.js";
+import { sendSuccess } from "../../utils/response.js";
+import { AppError } from "../../utils/errorHandler.js";
 
-export const getMe = async (req: AuthRequest, res: Response) => {
-  if (!req.userId) {
-    return res.status(401).json({ error: "Unauthorized" });
+export const getMe = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  try {
+    if (!req.user?.id) {
+      throw new AppError("Unauthorized", 401);
+    }
+
+    const user = await getUserById(req.user.id);
+    if (!user) {
+      throw new AppError("User not found", 404);
+    }
+
+    return sendSuccess(res, "User fetched successfully", { user });
+  } catch (err) {
+    next(err);
   }
-
-  const user = await getUserById(req.userId);
-  if (!user) {
-    return res.status(404).json({ error: "User not found" });
-  }
-
-  return res.json(user);
 };
