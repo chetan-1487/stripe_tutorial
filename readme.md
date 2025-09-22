@@ -4,7 +4,7 @@
 
 ## 1. Overview
 
-This project is a **Node.js + TypeScript backend** built with **Express, Prisma, Redis, and Stripe**.
+This project is a **Node.js + TypeScript backend** built with **Express, Prisma, Redis, and Stripe**.  
 It provides APIs for **authentication, payments, subscriptions, user management, and webhooks**.
 
 ---
@@ -112,7 +112,13 @@ npx prisma migrate dev
 npm run dev
 ```
 
-### Step 6: Build and Run Production
+### Step 6: Run Stripe Webhook Listener Locally
+
+```bash
+stripe listen --forward-to localhost:4000/api/webhook
+```
+
+### Step 7: Build and Run Production
 
 ```bash
 npm run build
@@ -165,34 +171,26 @@ npm start
 ## 7. API Modules
 
 * **Auth Module**
-
   * Login, Register, Token validation
 
 * **User Module**
-
   * User profile & management
 
 * **Plan Module**
-
   * Create, update, list subscription plans
 
 * **Checkout Module**
-
   * Handle checkout sessions with Stripe
 
 * **Payment Module**
-
   * Payment status & history
 
 * **Subscription Module**
-
   * Manage active subscriptions
 
 * **Webhook Module**
-
   * Handle Stripe webhooks (payment, subscription events)
 
----
 ---
 
 ## 8. Author
