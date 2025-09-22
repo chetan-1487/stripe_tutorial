@@ -1,6 +1,7 @@
 import { prisma } from "../../config/prisma.js";
 import {stripe} from "../../config/stripe.js";
 import { AppError } from "../../utils/errorHandler.js";
+import { ENV } from "../../config/env.js";
 
 export const createCheckoutSession = async (userId: string, planId: string, currency: string) => {
   const plan = await prisma.plan.findUnique({ where: { id: planId } });
@@ -9,14 +10,21 @@ export const createCheckoutSession = async (userId: string, planId: string, curr
   const user = await prisma.user.findUnique({ where: { id: userId } });
   if (!user) throw new AppError("User not found", 404);
 
-  const session = await stripe.checkout.sessions.create({
-    mode: "subscription",
-    payment_method_types: ["card"],
-    line_items: [{ price: plan.stripePriceId, quantity: 1 }],
-    customer_email: user.email,
-    success_url: `${process.env.FRONTEND_URL}/success?session_id={CHECKOUT_SESSION_ID}`,
-    cancel_url: `${process.env.FRONTEND_URL}/cancel`,
-  });
+const successUrl = ENV.CHECKOUT_SUCCESS_URL;
+const cancelUrl = ENV.CHECKOUT_CANCEL_URL;
+
+if (!successUrl || !cancelUrl) {
+  throw new AppError("Checkout URLs are not configured properly", 500);
+}
+
+const session = await stripe.checkout.sessions.create({
+  mode: "subscription",
+  payment_method_types: ["card"],
+  line_items: [{ price: plan.stripePriceId, quantity: 1 }],
+  customer_email: user.email,
+  success_url: successUrl, 
+  cancel_url: cancelUrl,   
+});
 
   return session;
 };
