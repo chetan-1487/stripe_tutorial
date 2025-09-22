@@ -197,5 +197,5 @@ npm start
 
 ## 8. Author
 
-* **Your Name**
+* **Chetan**
 * [GitHub Profile](https://github.com/chetan-1487)
