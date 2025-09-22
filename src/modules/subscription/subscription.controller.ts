@@ -10,10 +10,10 @@ export const createSubscriptionCheckout = async (req: AuthRequest, res: Response
     console.log("----------------------------userId-------------------------",userId);
     if (!userId) throw new AppError("Unauthorized", 401);
 
-    const { planId, currency } = req.body;
-    if (!planId) throw new AppError("Missing required fields", 400);
+    const { planName, currency } = req.body;
+    if (!planName) throw new AppError("Missing required fields", 400);
 
-    const session = await subscriptionService.createCheckoutSession(userId, planId, currency);
+    const session = await subscriptionService.createCheckoutSession(userId, planName, currency);
     return sendSuccess(res, "Subscription checkout session created", { url: session.url });
   } catch (err) {
     next(err);

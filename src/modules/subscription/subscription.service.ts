@@ -3,8 +3,8 @@ import {stripe} from "../../config/stripe.js";
 import { AppError } from "../../utils/errorHandler.js";
 import { ENV } from "../../config/env.js";
 
-export const createCheckoutSession = async (userId: string, planId: string, currency: string) => {
-  const plan = await prisma.plan.findUnique({ where: { id: planId } });
+export const createCheckoutSession = async (userId: string, planName: string, currency: string) => {
+  const plan = await prisma.plan.findFirst({ where: { name: planName } });
   if (!plan) throw new AppError("Plan not found", 404);
 
   const user = await prisma.user.findUnique({ where: { id: userId } });
