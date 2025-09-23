@@ -10,7 +10,7 @@ export const processWebhookEvent = async (rawBody: Buffer, sig: string) => {
     event = stripe.webhooks.constructEvent(
       rawBody,
       sig,
-      process.env.STRIPE_WEBHOOK_SECRET!
+      process.env.STRIPE_WEBHOOK_SECRET!,
     );
   } catch (err: any) {
     console.error("⚠️ Webhook signature verification failed.", err.message);
@@ -25,7 +25,14 @@ export const processWebhookEvent = async (rawBody: Buffer, sig: string) => {
      */
     case "checkout.session.completed": {
       const session = event.data.object as Stripe.Checkout.Session;
-      const { mode, id, amount_total, currency, customer_email, subscription: subscriptionId } = session;
+      const {
+        mode,
+        id,
+        amount_total,
+        currency,
+        customer_email,
+        subscription: subscriptionId,
+      } = session;
 
       if (!customer_email) break;
 
@@ -38,7 +45,9 @@ export const processWebhookEvent = async (rawBody: Buffer, sig: string) => {
 
       if (mode === "payment") {
         // Save one-time payment (idempotent check)
-        const exists = await prisma.payment.findUnique({ where: { stripeId: id } });
+        const exists = await prisma.payment.findUnique({
+          where: { stripeId: id },
+        });
         if (!exists) {
           await prisma.payment.create({
             data: {
@@ -59,12 +68,16 @@ export const processWebhookEvent = async (rawBody: Buffer, sig: string) => {
       }
 
       if (mode === "subscription" && subscriptionId) {
-        const subscription = (await stripe.subscriptions.retrieve(subscriptionId as string)) as Stripe.Subscription;
+        const subscription = (await stripe.subscriptions.retrieve(
+          subscriptionId as string,
+        )) as Stripe.Subscription;
 
         const priceId = subscription.items.data[0]?.price.id;
         if (!priceId) break;
 
-        const plan = await prisma.plan.findUnique({ where: { stripePriceId: priceId } });
+        const plan = await prisma.plan.findUnique({
+          where: { stripePriceId: priceId },
+        });
         if (!plan) break;
 
         // Check existing active subscription
@@ -84,7 +97,9 @@ export const processWebhookEvent = async (rawBody: Buffer, sig: string) => {
                 stripeId: subscription.id,
                 status: subscription.status,
                 startDate: new Date(subscription.start_date * 1000),
-                endDate: new Date((subscription as any).current_period_end * 1000),
+                endDate: new Date(
+                  (subscription as any).current_period_end * 1000,
+                ),
               },
             });
 
@@ -97,9 +112,13 @@ export const processWebhookEvent = async (rawBody: Buffer, sig: string) => {
               });
             }
 
-            console.log(`🔄 User ${user.email} upgraded/downgraded to plan ${plan.name}`);
+            console.log(
+              `🔄 User ${user.email} upgraded/downgraded to plan ${plan.name}`,
+            );
           } else {
-            console.warn(`⚠️ User ${user.email} already has this subscription plan.`);
+            console.warn(
+              `⚠️ User ${user.email} already has this subscription plan.`,
+            );
           }
         } else {
           // Create new subscription
@@ -110,7 +129,9 @@ export const processWebhookEvent = async (rawBody: Buffer, sig: string) => {
               stripeId: subscription.id,
               status: subscription.status,
               startDate: new Date(subscription.start_date * 1000),
-              endDate: new Date((subscription as any).current_period_end * 1000),
+              endDate: new Date(
+                (subscription as any).current_period_end * 1000,
+              ),
             },
           });
 
@@ -129,23 +150,25 @@ export const processWebhookEvent = async (rawBody: Buffer, sig: string) => {
         const invoiceId = session.invoice as string | undefined;
         if (invoiceId) {
           const invoice = await stripe.invoices.retrieve(invoiceId);
-          if(invoice.id){
-          const exists = await prisma.payment.findUnique({ where: { stripeId: invoice.id } });
-          if (!exists) {
-            await prisma.payment.create({
-              data: {
-                userId: user.id,
-                amount: invoice.amount_paid,
-                currency: invoice.currency,
-                stripeId: invoice.id,
-                status: "succeeded",
-                type: "SUBSCRIPTION",
-              },
+          if (invoice.id) {
+            const exists = await prisma.payment.findUnique({
+              where: { stripeId: invoice.id },
             });
+            if (!exists) {
+              await prisma.payment.create({
+                data: {
+                  userId: user.id,
+                  amount: invoice.amount_paid,
+                  currency: invoice.currency,
+                  stripeId: invoice.id,
+                  status: "succeeded",
+                  type: "SUBSCRIPTION",
+                },
+              });
+            }
           }
         }
       }
-    }
       break;
     }
 
@@ -157,14 +180,20 @@ export const processWebhookEvent = async (rawBody: Buffer, sig: string) => {
       const subscriptionId = invoice.subscription as string | null;
       if (!subscriptionId) break;
 
-      const subscription = await prisma.subscription.findUnique({ where: { stripeId: subscriptionId } });
+      const subscription = await prisma.subscription.findUnique({
+        where: { stripeId: subscriptionId },
+      });
       if (!subscription) break;
 
-      const plan = await prisma.plan.findUnique({ where: { id: subscription.planId } });
+      const plan = await prisma.plan.findUnique({
+        where: { id: subscription.planId },
+      });
 
       // Save payment (idempotent check)
-      if(!invoice.id) break;
-      const exists = await prisma.payment.findUnique({ where: { stripeId: invoice.id } });
+      if (!invoice.id) break;
+      const exists = await prisma.payment.findUnique({
+        where: { stripeId: invoice.id },
+      });
       if (!exists) {
         await prisma.payment.create({
           data: {
@@ -199,7 +228,10 @@ export const processWebhookEvent = async (rawBody: Buffer, sig: string) => {
         });
       }
 
-      console.log("✅ Subscription payment recorded for user:", subscription.userId);
+      console.log(
+        "✅ Subscription payment recorded for user:",
+        subscription.userId,
+      );
       break;
     }
 

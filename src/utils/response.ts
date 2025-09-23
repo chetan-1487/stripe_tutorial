@@ -10,7 +10,7 @@ export const sendSuccess = <T>(
   res: Response,
   message: string,
   data?: T,
-  statusCode = 200
+  statusCode = 200,
 ) => {
   const response: ApiResponse<T> = {
     success: true,
@@ -20,12 +20,11 @@ export const sendSuccess = <T>(
   return res.status(statusCode).json(response);
 };
 
-
 export const sendError = (
   res: Response,
   message: string,
   statusCode = 500,
-  errors?: any
+  errors?: any,
 ) => {
   const response: ApiResponse = {
     success: false,

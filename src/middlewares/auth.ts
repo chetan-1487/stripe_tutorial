@@ -4,12 +4,16 @@ import { ENV } from "../config/env.js";
 import { AppError } from "../utils/errorHandler.js";
 
 export interface AuthRequest extends Request {
-    user?: { id: string; email?: string };
+  user?: { id: string; email?: string };
 }
 
-export const authMiddleware = (req: AuthRequest, res: Response, next: NextFunction) => {
+export const authMiddleware = (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction,
+) => {
   const authHeader = req.headers.authorization;
-    
+
   if (!authHeader) throw new AppError("Authorization header missing", 401);
 
   const token = authHeader.split(" ")[1];
@@ -24,7 +28,6 @@ export const authMiddleware = (req: AuthRequest, res: Response, next: NextFuncti
 
     // Use "sub" because that’s what we set in login
     req.user = { id: payload.userId, email: payload.email };
-
 
     next();
   } catch {

@@ -1,4 +1,4 @@
-import type{ Request, Response, NextFunction } from "express";
+import type { Request, Response, NextFunction } from "express";
 import { sendError } from "../utils/response.js";
 
 export class AppError extends Error {
@@ -18,7 +18,7 @@ export const errorHandler = (
   err: Error,
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   console.error(`[ERROR] ${err.message}`);
 

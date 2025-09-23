@@ -1,9 +1,9 @@
 import { prisma } from "../../config/prisma.js";
 import { stripe } from "../../config/stripe.js";
 
-export async function createOneTimeCheckout(userId: string, planId: string) {
+export async function createOneTimeCheckout(userId: string, planName: string) {
   const user = await prisma.user.findUnique({ where: { id: userId } });
-  const plan = await prisma.plan.findUnique({ where: { id: planId } });
+  const plan = await prisma.plan.findFirst({ where: { id: planName } });
 
   if (!user || !plan) throw new Error("Invalid user or plan");
 
@@ -20,9 +20,12 @@ export async function createOneTimeCheckout(userId: string, planId: string) {
   return session.url;
 }
 
-export async function createSubscriptionCheckout(userId: string, planId: string) {
+export async function createSubscriptionCheckout(
+  userId: string,
+  planName: string,
+) {
   const user = await prisma.user.findUnique({ where: { id: userId } });
-  const plan = await prisma.plan.findUnique({ where: { id: planId } });
+  const plan = await prisma.plan.findFirst({ where: { id: planName } });
 
   if (!user || !plan) throw new Error("Invalid user or plan");
 

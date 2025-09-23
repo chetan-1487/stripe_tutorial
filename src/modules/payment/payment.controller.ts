@@ -2,22 +2,42 @@ import type { Request, Response, NextFunction } from "express";
 import * as paymentService from "./payment.services.js";
 import { sendSuccess } from "../../utils/response.js";
 import { AppError } from "../../utils/errorHandler.js";
+import type { AuthRequest } from "../../middlewares/auth.js";
 
-export const createOneTimeCheckout = async (req: Request, res: Response, next: NextFunction) => {
+export const createOneTimeCheckout = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction,
+) => {
   try {
-    const { userId, planId, currency } = req.body;
-    if (!userId || !planId) throw new AppError("Missing required fields", 400);
+    const userId = req.user?.id;
 
-    const session = await paymentService.createOneTimeCheckout(userId, planId, currency);
-    return sendSuccess(res, "One-time checkout session created", { url: session.url });
+    if (!userId) throw new AppError("Missing userId fields", 400);
+
+    const { planName, currency } = req.body;
+
+    if (!planName) throw new AppError("Missing planName fields", 400);
+
+    const session = await paymentService.createOneTimeCheckout(
+      userId,
+      planName,
+      currency,
+    );
+    return sendSuccess(res, "One-time checkout session created", {
+      url: session.url,
+    });
   } catch (err) {
     next(err);
   }
 };
 
-export const getUserPayments = async (req: Request, res: Response, next: NextFunction) => {
+export const getUserPayments = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction,
+) => {
   try {
-    const { userId } = req.params;
+    const userId = req.user?.id;
     if (!userId) throw new AppError("UserId required", 400);
 
     const payments = await paymentService.getPaymentsByUser(userId);

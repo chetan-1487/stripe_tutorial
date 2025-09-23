@@ -8,7 +8,8 @@ export const ENV = {
   PORT: process.env.PORT || 4000,
   DATABASE_URL: process.env.DATABASE_URL!,
   JWT_SECRET: process.env.JWT_SECRET || "supersecret",
-  JWT_EXPIRES_IN: (process.env.JWT_EXPIRES_IN || "1h") as SignOptions["expiresIn"],
+  JWT_EXPIRES_IN: (process.env.JWT_EXPIRES_IN ||
+    "1h") as SignOptions["expiresIn"],
   EMAIL_HOST: process.env.EMAIL_HOST!,
   EMAIL_PORT: Number(process.env.EMAIL_PORT || 587),
   EMAIL_USER: process.env.EMAIL_USER!,

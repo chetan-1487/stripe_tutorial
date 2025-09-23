@@ -3,7 +3,11 @@ import redis from "../config/redis.js";
 const OTP_PREFIX = "otp:";
 
 // ttlMs default: 5 minutes
-export async function setOtp(email: string, otp: string, ttlMs = 5 * 60 * 1000) {
+export async function setOtp(
+  email: string,
+  otp: string,
+  ttlMs = 5 * 60 * 1000,
+) {
   await redis.set(`${OTP_PREFIX}${email}`, otp, "PX", ttlMs);
 }
 

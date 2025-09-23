@@ -1,9 +1,13 @@
-import {prisma} from "../../config/prisma.js";
-import {stripe} from "../../config/stripe.js";
+import { prisma } from "../../config/prisma.js";
+import { stripe } from "../../config/stripe.js";
 import { AppError } from "../../utils/errorHandler.js";
 
-export const createOneTimeCheckout = async (userId: string, planId: string, currency: string) => {
-  const plan = await prisma.plan.findUnique({ where: { id: planId } });
+export const createOneTimeCheckout = async (
+  userId: string,
+  planName: string,
+  currency: string,
+) => {
+  const plan = await prisma.plan.findFirst({ where: { name: planName } });
   if (!plan) throw new AppError("Plan not found", 404);
 
   const user = await prisma.user.findUnique({ where: { id: userId } });

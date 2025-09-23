@@ -16,10 +16,10 @@ app.use(
   cors({
     origin: process.env.CORS_ORIGIN || "*",
     credentials: true,
-  })
+  }),
 );
 
-// 🚨 Skip express.json() for webhook
+// Skip express.json() for webhook
 app.use((req, res, next) => {
   if (req.originalUrl === "/api/webhook") {
     next();

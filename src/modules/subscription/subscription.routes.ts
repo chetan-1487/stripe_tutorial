@@ -11,18 +11,18 @@ import { authMiddleware } from "../../middlewares/auth.js";
 const router = Router();
 
 // POST /subscriptions/checkout → create a new subscription session
-router.post("/checkout",authMiddleware, createSubscriptionCheckout);
+router.post("/checkout", authMiddleware, createSubscriptionCheckout);
 
 // GET /subscriptions/:userId → fetch all subscriptions for a user
-router.get("/:userId", getUserSubscriptions);
+router.get("/userSubscription", authMiddleware, getUserSubscriptions);
 
 // POST /subscriptions/:id/cancel → cancel subscription
-router.post("/:id/cancel", cancelSubscription);
+router.post("/:id/cancel", authMiddleware, cancelSubscription);
 
 // POST /subscriptions/:id/upgrade → upgrade subscription
-router.post("/:id/upgrade", upgradeSubscription);
+router.post("/:id/upgrade", authMiddleware, upgradeSubscription);
 
 // POST /subscriptions/:id/downgrade → downgrade subscription
-router.post("/:id/downgrade", downgradeSubscription);
+router.post("/:id/downgrade", authMiddleware, downgradeSubscription);
 
 export const subscriptionRoute = router;

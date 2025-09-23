@@ -1,8 +1,8 @@
-import {ENV} from "../config/env.js"
+import { ENV } from "../config/env.js";
 import { otpEmailTemplate } from "./emailTemplates.js";
-import nodemailer from "nodemailer"
+import nodemailer from "nodemailer";
 
-export const sendEmail=async (to: string, subject: string, otp: string) => {
+export const sendEmail = async (to: string, subject: string, otp: string) => {
   if (ENV.IS_DEVELOPMENT) {
     console.log(`[DEV] OTP for ${to}: ${otp}`);
     return;
@@ -24,10 +24,10 @@ export const sendEmail=async (to: string, subject: string, otp: string) => {
     text: `Your verification code is ${otp}`,
     html: otpEmailTemplate(otp, to),
   });
-}
+};
 
-export const generateOtp=(length = 6) => {
-const max = 10 ** length;
-const num = Math.floor(Math.random() * (max - 1)) + 1;
-return num.toString().padStart(length, '0');
-}
+export const generateOtp = (length = 6) => {
+  const max = 10 ** length;
+  const num = Math.floor(Math.random() * (max - 1)) + 1;
+  return num.toString().padStart(length, "0");
+};

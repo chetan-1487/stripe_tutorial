@@ -3,11 +3,15 @@ import * as AuthService from "./auth.services.js";
 import { sendSuccess } from "../../utils/response.js";
 import { AppError } from "../../utils/errorHandler.js";
 
-export const signup = async (req: Request, res: Response, next: NextFunction) => {
+export const signup = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
   try {
     const { email, password } = req.body;
 
-     if (!email || !password) {
+    if (!email || !password) {
       throw new AppError("Email and password are required", 400);
     }
 
@@ -18,7 +22,11 @@ export const signup = async (req: Request, res: Response, next: NextFunction) =>
   }
 };
 
-export const verifyOtp = async (req: Request, res: Response, next: NextFunction) => {
+export const verifyOtp = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
   try {
     const { email, otp } = req.body;
 
@@ -33,7 +41,11 @@ export const verifyOtp = async (req: Request, res: Response, next: NextFunction)
   }
 };
 
-export const login = async (req: Request, res: Response, next: NextFunction) => {
+export const login = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
   try {
     const { email, password } = req.body;
 
@@ -51,7 +63,7 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
 export const forgotPasswordHandler = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const { email } = req.body;
@@ -70,7 +82,7 @@ export const forgotPasswordHandler = async (
 export const resetPasswordHandler = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const { email, otp, newPassword } = req.body;

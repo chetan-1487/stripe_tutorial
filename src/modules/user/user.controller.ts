@@ -4,7 +4,11 @@ import { getUserById } from "./user.service.js";
 import { sendSuccess } from "../../utils/response.js";
 import { AppError } from "../../utils/errorHandler.js";
 
-export const getMe = async (req: AuthRequest, res: Response, next: NextFunction) => {
+export const getMe = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction,
+) => {
   try {
     if (!req.user?.id) {
       throw new AppError("Unauthorized", 401);

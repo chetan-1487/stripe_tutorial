@@ -1,6 +1,6 @@
 import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken" ;
-import type {SignOptions, Secret} from "jsonwebtoken";
+import jwt from "jsonwebtoken";
+import type { SignOptions, Secret } from "jsonwebtoken";
 import { prisma } from "../../config/prisma.js";
 import { ENV } from "../../config/env.js";
 import { generateOtp } from "../../utils/otp.js";
@@ -25,10 +25,10 @@ export const signup = async (email: string, password: string) => {
   await sendEmail(email, "Verify your email address", otp);
 
   return { id: user.id, email: user.email };
-}
+};
 
 // Verify OTP: check Redis and mark user as verified
-export const verifyOtp= async (email: string, otp: string) => {
+export const verifyOtp = async (email: string, otp: string) => {
   const user = await prisma.user.findUnique({ where: { email } });
   if (!user) throw { status: 400, message: "Invalid email" };
 
@@ -38,11 +38,13 @@ export const verifyOtp= async (email: string, otp: string) => {
   // Mark user as verified (optional: add isEmailVerified field in Prisma)
   await prisma.user.update({
     where: { email },
-    data: { /* add fields like isEmailVerified if needed */ },
+    data: {
+      /* add fields like isEmailVerified if needed */
+    },
   });
 
   return true;
-}
+};
 
 // Login: validate credentials and return JWT
 export const login = async (email: string, password: string) => {
@@ -58,12 +60,16 @@ export const login = async (email: string, password: string) => {
     expiresIn: ENV.JWT_EXPIRES_IN || "1h", // default 1h if not set
   };
 
-  const token = jwt.sign({ userId: user.id,email: user.email }, secret, options);
+  const token = jwt.sign(
+    { userId: user.id, email: user.email },
+    secret,
+    options,
+  );
 
   return token;
-}
+};
 
-export const forgotPassword= async (email: string) =>  {
+export const forgotPassword = async (email: string) => {
   const user = await prisma.user.findUnique({ where: { email } });
   if (!user) throw { status: 400, message: "User not found" };
 
@@ -72,10 +78,14 @@ export const forgotPassword= async (email: string) =>  {
 
   await sendEmail(email, "Password Reset Request", otp);
   return true;
-}
+};
 
 // Step 2: Reset password using OTP
-export async function resetPassword(email: string, otp: string, newPassword: string) {
+export async function resetPassword(
+  email: string,
+  otp: string,
+  newPassword: string,
+) {
   const user = await prisma.user.findUnique({ where: { email } });
   if (!user) throw { status: 400, message: "Invalid email" };
 
