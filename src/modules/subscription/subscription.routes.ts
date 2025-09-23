@@ -20,7 +20,7 @@ router.get("/userSubscription", authMiddleware, getUserSubscriptions);
 router.post("/:id/cancel", authMiddleware, cancelSubscription);
 
 // POST /subscriptions/:id/upgrade → upgrade subscription
-router.post("/:id/upgrade", authMiddleware, upgradeSubscription);
+router.post("/upgrade", authMiddleware, upgradeSubscription);
 
 // POST /subscriptions/:id/downgrade → downgrade subscription
 router.post("/:id/downgrade", authMiddleware, downgradeSubscription);

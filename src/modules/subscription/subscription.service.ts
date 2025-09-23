@@ -58,23 +58,74 @@ export const cancelSubscription = async (subscriptionId: string) => {
 
 export const changeSubscriptionPlan = async (
   subscriptionId: string,
-  newPlanId: string,
+  newPlanName: string,
+  currency: string,
 ) => {
+  // Fetch current subscription and plan
   const subscription = await prisma.subscription.findUnique({
     where: { id: subscriptionId },
+    include: { plan: true },
   });
   if (!subscription) throw new AppError("Subscription not found", 404);
 
-  const newPlan = await prisma.plan.findUnique({ where: { id: newPlanId } });
-  if (!newPlan) throw new AppError("New plan not found", 404);
+  // Find new plan by name
+  const newPlan = await prisma.plan.findFirst({ where: { name: newPlanName } });
+  if (!newPlan) throw new AppError("Plan not found", 404);
 
+  // Check if user already has this plan
+  if (subscription.planId === newPlan.id) {
+    throw new AppError(`You already have the ${newPlan.name} plan`, 400);
+  }
+
+  // Retrieve Stripe subscription
+  const stripeSubscription = await stripe.subscriptions.retrieve(subscription.stripeId);
+
+  if (!stripeSubscription.items.data[0]) {
+    throw new AppError("Subscription item not found on Stripe", 500);
+  }
+
+  const subscriptionItemId = stripeSubscription.items.data[0].id;
+
+  // Update subscription item in Stripe
   await stripe.subscriptions.update(subscription.stripeId, {
-    items: [{ price: newPlan.stripePriceId }],
+    items: [
+      {
+        id: subscriptionItemId,
+        price: newPlan.stripePriceId,
+      },
+    ],
+    proration_behavior: "create_prorations", // adjust billing for partial periods
   });
 
-  return prisma.subscription.update({
+  // Update subscription in DB
+  const updatedSub = await prisma.subscription.update({
     where: { id: subscriptionId },
-    data: { planId: newPlanId, status: "active" },
+    data: {
+      planId: newPlan.id,
+      status: "active",
+    },
     include: { plan: true },
   });
+
+  // Adjust user credits if plan credits changed
+  const creditDiff = newPlan.credits - subscription.plan.credits;
+  if (creditDiff !== 0) {
+    await prisma.user.update({
+      where: { id: subscription.userId },
+      data: { credits: { increment: creditDiff } },
+    });
+  }
+
+  return updatedSub;
+};
+
+
+export const createCustomerPortalSession = async (customerId: string, returnUrl: string) => {
+  // Create a session for the Stripe Customer Portal
+  const session = await stripe.billingPortal.sessions.create({
+    customer: customerId,
+    return_url: returnUrl, // Redirect after leaving portal
+  });
+
+  return session.url;
 };
