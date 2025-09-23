@@ -115,6 +115,7 @@ npm run dev
 ### Step 6: Run Stripe Webhook Listener Locally
 
 ```bash
+stripe login
 stripe listen --forward-to localhost:4000/api/webhook
 ```
 
